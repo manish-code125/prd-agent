@@ -1,0 +1,24 @@
+Conduct market research on the following topic:
+
+**Research Topic:** {topic}
+
+{additional_instructions}
+
+## Your Plan
+
+**Step 1 — Research (do this FIRST, aim for 6-10 tool calls total):**
+- 2-3 searches on market size, segments, and landscape
+- 2-3 searches on key players, competitors, and market share
+- 1-2 searches on analyst reports and expert perspectives
+- 1-2 searches on trends, outlook, and risks
+- Use WebFetch on 2-3 of the most important pages for detailed data
+- HARD LIMIT: After 10 tool calls, STOP immediately and start writing
+
+**Step 2 — Write the report (this is the MOST IMPORTANT step):**
+- Write the COMPLETE Markdown report in a SINGLE message
+- Start directly with: # {topic}: Executive Market Research Brief
+- Follow the exact section structure from your instructions
+- Target 2500-3500 words (8-10 PDF pages) — this must be a substantial report
+- End with the References section listing ALL URLs consulted
+
+CRITICAL: The report is the deliverable — not the research. A complete, well-written 8-page report with 6 good sources is FAR better than endless searching that produces no report. After your research searches, you MUST write the full report.

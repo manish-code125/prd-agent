@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Research Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #f1f5f9;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #64748b;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: #2563eb; }
+
+        .btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        .btn-stop {
+            width: 100%;
+            padding: 12px 24px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+
+        .btn-stop:hover { background: #b91c1c; }
+
+        .btn-stop:disabled {
+            background: #7f1d1d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Progress section */
+        .progress-section {
+            display: none;
+            margin-top: 32px;
+        }
+
+        .progress-section.active { display: block; }
+
+        .progress-bar-container {
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 6px;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+
+        .progress-bar.indeterminate {
+            width: 30%;
+            animation: slide 1.5s ease-in-out infinite;
+        }
+
+        @keyframes slide {
+            0% { margin-left: 0; }
+            50% { margin-left: 70%; }
+            100% { margin-left: 0; }
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .log-area {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 260px;
+            overflow-y: auto;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            padding: 2px 0;
+            color: #94a3b8;
+        }
+
+        .log-entry.search { color: #facc15; }
+        .log-entry.fetch { color: #38bdf8; }
+        .log-entry.phase { color: #a78bfa; font-weight: 600; }
+        .log-entry.done { color: #4ade80; font-weight: 600; }
+        .log-entry.error { color: #f87171; }
+
+        /* Result section */
+        .result-section {
+            display: none;
+            margin-top: 32px;
+        }
+
+        .result-section.active { display: block; }
+
+        .result-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .result-card .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-card h3 {
+            font-size: 20px;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .result-card p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .btn-download {
+            display: inline-block;
+            padding: 12px 32px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-download:hover { background: #059669; }
+
+        .btn-new {
+            display: inline-block;
+            padding: 12px 32px;
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-new:hover {
+            color: #f1f5f9;
+            border-color: #64748b;
+        }
+
+        .error-card {
+            background: #1e293b;
+            border: 1px solid #7f1d1d;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .error-card h3 { color: #fca5a5; }
+        .error-card p { color: #94a3b8; font-size: 14px; }
+
+        /* Past reports */
+        .past-reports {
+            margin-top: 48px;
+        }
+
+        .past-reports h3 {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .report-list {
+            list-style: none;
+        }
+
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .report-item:hover { border-color: #475569; }
+
+        .report-item .name {
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+
+        .report-item .date {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .report-item a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .report-item a:hover { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Market Research Agent</h1>
+            <p>AI-powered executive market research reports</p>
+        </div>
+
+        <div class="card" id="inputCard">
+            <div class="form-group">
+                <label for="topic">Research Topic</label>
+                <input type="text" id="topic" placeholder="e.g. Cloud Computing Market 2025" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="prompt">Additional Instructions (optional)</label>
+                <textarea id="prompt" placeholder="e.g. Focus on the APAC region, compare top 3 vendors in detail, include pricing analysis..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="maxTurns">Research Depth <span id="maxTurnsValue" style="color:#64748b; font-weight:400;">— 30 turns</span></label>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <input type="range" id="maxTurns" min="10" max="60" value="30" step="5"
+                        style="flex:1; accent-color:#3b82f6; background:transparent;"
+                        oninput="document.getElementById('maxTurnsValue').textContent = '— ' + this.value + ' turns'">
+                    <div style="display:flex; justify-content:space-between; width:100%; position:absolute; pointer-events:none; padding:0 4px; font-size:11px; color:#475569;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#475569; margin-top:4px;">
+                    <span>Quick (10)</span>
+                    <span>Standard (30)</span>
+                    <span>Deep (60)</span>
+                </div>
+            </div>
+            <button class="btn" id="startBtn" onclick="startResearch()">Generate Research Report</button>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <div class="progress-bar-container">
+                <div class="progress-bar indeterminate" id="progressBar"></div>
+            </div>
+            <div class="status-text" id="statusText">Initializing research agent...</div>
+            <div class="log-area" id="logArea"></div>
+            <button class="btn-stop" id="stopBtn" onclick="stopResearch()">Stop Research</button>
+        </div>
+
+        <div class="result-section" id="resultSection"></div>
+
+        <div class="past-reports" id="pastReports"></div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let currentSessionId = null;
+
+        async function stopResearch() {
+            const stopBtn = document.getElementById('stopBtn');
+            stopBtn.disabled = true;
+            stopBtn.textContent = 'Stopping...';
+
+            // Cancel server-side task
+            if (currentSessionId) {
+                try {
+                    await fetch('/api/research/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ session_id: currentSessionId })
+                    });
+                } catch (e) {
+                    // Ignore — we'll close the connection anyway
+                }
+            }
+
+            // Close SSE connection
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+
+            addLog('Research stopped by user.', 'error');
+
+            // Reset UI after a brief pause so the user sees the log message
+            setTimeout(() => {
+                document.getElementById('progressSection').classList.remove('active');
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('startBtn').textContent = 'Generate Research Report';
+                document.getElementById('topic').disabled = false;
+                document.getElementById('prompt').disabled = false;
+                document.getElementById('maxTurns').disabled = false;
+                stopBtn.disabled = false;
+                stopBtn.textContent = 'Stop Research';
+                currentSessionId = null;
+            }, 1000);
+        }
+
+        async function startResearch() {
+            const topic = document.getElementById('topic').value.trim();
+            const prompt = document.getElementById('prompt').value.trim();
+
+            if (!topic) {
+                document.getElementById('topic').focus();
+                return;
+            }
+
+            const maxTurns = document.getElementById('maxTurns').value;
+
+            // Disable form
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').textContent = 'Researching...';
+            document.getElementById('topic').disabled = true;
+            document.getElementById('prompt').disabled = true;
+            document.getElementById('maxTurns').disabled = true;
+
+            // Show progress
+            const progressSection = document.getElementById('progressSection');
+            progressSection.classList.add('active');
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('logArea').innerHTML = '';
+
+            addLog('Starting research on: ' + topic, 'phase');
+
+            // SSE connection for live progress
+            const params = new URLSearchParams({ topic, max_turns: maxTurns });
+            if (prompt) params.set('prompt', prompt);
+
+            eventSource = new EventSource('/api/research/stream?' + params.toString());
+
+            eventSource.addEventListener('session', (e) => {
+                const data = JSON.parse(e.data);
+                currentSessionId = data.session_id;
+            });
+
+            eventSource.addEventListener('cancelled', (e) => {
+                const data = JSON.parse(e.data);
+                eventSource.close();
+                eventSource = null;
+                addLog(data.message, 'error');
+                setTimeout(() => {
+                    document.getElementById('progressSection').classList.remove('active');
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('startBtn').textContent = 'Generate Research Report';
+                    document.getElementById('topic').disabled = false;
+                    document.getElementById('prompt').disabled = false;
+                    document.getElementById('maxTurns').disabled = false;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('stopBtn').textContent = 'Stop Research';
+                    currentSessionId = null;
+                }, 1000);
+            });
+
+            eventSource.addEventListener('status', (e) => {
+                const data = JSON.parse(e.data);
+                document.getElementById('statusText').textContent = data.message;
+            });
+
+            eventSource.addEventListener('log', (e) => {
+                const data = JSON.parse(e.data);
+                addLog(data.message, data.type || '');
+            });
+
+            eventSource.addEventListener('complete', (e) => {
+                const data = JSON.parse(e.data);
+                eventSource.close();
+                eventSource = null;
+                currentSessionId = null;
+                showResult(data);
+            });
+
+            eventSource.addEventListener('heartbeat', (e) => {
+                const data = JSON.parse(e.data);
+                document.getElementById('statusText').textContent = data.message;
+            });
+
+            eventSource.addEventListener('error_event', (e) => {
+                const data = JSON.parse(e.data);
+                eventSource.close();
+                eventSource = null;
+                currentSessionId = null;
+                showError(data.message);
+            });
+
+            eventSource.onerror = () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                currentSessionId = null;
+                showError('Connection lost. Please try again.');
+            };
+        }
+
+        function addLog(message, type) {
+            const logArea = document.getElementById('logArea');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+
+            const prefix = {
+                'search': '>> ',
+                'fetch': '-> ',
+                'phase': '## ',
+                'done': '>> ',
+                'error': '!! ',
+            }[type] || '   ';
+
+            entry.textContent = prefix + message;
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function showResult(data) {
+            const section = document.getElementById('resultSection');
+            section.innerHTML = `
+                <div class="result-card">
+                    <div class="icon">&#9989;</div>
+                    <h3>Report Ready</h3>
+                    <p>${data.filename} &middot; ${data.pages} pages</p>
+                    <a class="btn-download" href="/api/reports/${encodeURIComponent(data.filename)}" download>
+                        Download PDF
+                    </a>
+                    <button class="btn-new" onclick="resetForm()">New Research</button>
+                </div>
+            `;
+            section.classList.add('active');
+
+            document.getElementById('progressSection').classList.remove('active');
+            loadPastReports();
+        }
+
+        function showError(message) {
+            const section = document.getElementById('resultSection');
+            section.innerHTML = `
+                <div class="error-card">
+                    <div class="icon" style="font-size:48px">&#10060;</div>
+                    <h3>Research Failed</h3>
+                    <p>${message}</p>
+                    <button class="btn-new" onclick="resetForm()" style="margin-top:16px">Try Again</button>
+                </div>
+            `;
+            section.classList.add('active');
+            document.getElementById('progressSection').classList.remove('active');
+        }
+
+        function resetForm() {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = 'Generate Research Report';
+            document.getElementById('topic').disabled = false;
+            document.getElementById('prompt').disabled = false;
+            document.getElementById('maxTurns').disabled = false;
+            document.getElementById('topic').value = '';
+            document.getElementById('prompt').value = '';
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('progressSection').classList.remove('active');
+            document.getElementById('topic').focus();
+        }
+
+        async function loadPastReports() {
+            try {
+                const resp = await fetch('/api/reports');
+                const reports = await resp.json();
+                const container = document.getElementById('pastReports');
+
+                if (reports.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                let html = '<h3>Previous Reports</h3><ul class="report-list">';
+                for (const r of reports) {
+                    html += `
+                        <li class="report-item">
+                            <div>
+                                <div class="name">${r.name}</div>
+                                <div class="date">${r.date}</div>
+                            </div>
+                            <a href="/api/reports/${encodeURIComponent(r.filename)}" download>Download</a>
+                        </li>
+                    `;
+                }
+                html += '</ul>';
+                container.innerHTML = html;
+            } catch (e) {
+                // Silently ignore
+            }
+        }
+
+        // Load past reports on page load
+        loadPastReports();
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+[project]
+name = "market-research-agent"
+version = "0.1.0"
+description = "AI-powered market research agent that generates professional PDF reports"
+requires-python = ">=3.10"
+dependencies = [
+    "claude-code-sdk>=0.0.25",
+    "typer>=0.12.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "markdown>=3.5",
+    "weasyprint>=62.0",
+    "pygments>=2.17.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+]
+
+[project.scripts]
+market-research = "market_research.cli:app"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["market_research*"]
